@@ -1,8 +1,9 @@
-from cloudant import Cloudant
-from flask import Flask, render_template, request, jsonify
 import atexit
-import os
 import json
+import os
+
+from cloudant import Cloudant
+from flask import Flask, render_template, request
 
 app = Flask(__name__, static_url_path='')
 
@@ -34,50 +35,44 @@ elif os.path.isfile('vcap-local.json'):
         client = Cloudant(user, password, url=url, connect=True)
         db = client.create_database(db_name, throw_on_exists=False)
 
-# On IBM Cloud Cloud Foundry, get the port number from the environment variable PORT
-# When running this app on the local machine, default the port to 8000
 port = int(os.getenv('PORT', 8000))
 
 @app.route('/')
-def root():
-    return app.send_static_file('index.html')
+def index():
+    db = client.create_database(db_name, throw_on_exists=False)
+    orders = db['Orders']['data']
+    customers = db['Customers']['data']
+    return render_template(
+        'index.html', 
+        orders=orders,
+        query_orders=orders, 
+        customers=customers,
+        city=""
+    )
 
-# /* Endpoint to greet and add a new visitor to database.
-# * Send a POST request to localhost:8000/api/visitors with body
-# * {
-# *     "name": "Bob"
-# * }
-# */
-@app.route('/api/visitors', methods=['GET'])
-def get_visitor():
-    if client:
-        return jsonify(list(map(lambda doc: doc['name'], db)))
+@app.route('/queryOrders', methods=["POST"])
+def query_orders():
+    db = client.create_database(db_name, throw_on_exists=False)
+    city = request.form['city']
+    orders = db['Orders']['data']
+    customers = db['Customers']['data']
+    customers_from_city_ids = list(map(
+        lambda c: c['id'], 
+        filter(lambda c: c['CustTown'] == city, customers))
+    )
+    if city != "":
+        query_orders = list(filter(lambda order: order['id'] in customers_from_city_ids, orders))
     else:
-        print('No database')
-        return jsonify([])
+        query_orders = orders
 
-# /**
-#  * Endpoint to get a JSON array of all the visitors in the database
-#  * REST API example:
-#  * <code>
-#  * GET http://localhost:8000/api/visitors
-#  * </code>
-#  *
-#  * Response:
-#  * [ "Bob", "Jane" ]
-#  * @return An array of all the visitor names
-#  */
-@app.route('/api/visitors', methods=['POST'])
-def put_visitor():
-    user = request.json['name']
-    data = {'name':user}
-    if client:
-        my_document = db.create_document(data)
-        data['_id'] = my_document['_id']
-        return jsonify(data)
-    else:
-        print('No database')
-        return jsonify(data)
+    return render_template(
+        'index.html', 
+        orders=orders,
+        query_orders=query_orders, 
+        customers=customers,
+        city=city
+    )
+
 
 @atexit.register
 def shutdown():
