@@ -2,7 +2,7 @@ import atexit
 import json
 import os
 
-from cloudant.client import Cloudant
+from cloudant import Cloudant
 from flask import Flask, render_template, request
 
 app = Flask(__name__, static_url_path='')
