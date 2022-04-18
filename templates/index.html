@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Прейскурант цен</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body class="p-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-6">
+                <h3>Заказы</h3>
+                <table class="table table-bordered table-striped table-sm w-100">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>ID покупателя</th>
+                            <th>Дата</th>
+                            <th>Оплачен</th>
+                            <th>Выполнен</th>
+                        </tr>
+                    </thead>
+                    {%for i in range(0, orders|length)%}
+                        <tr>
+                            <td>{{orders[i]['id']}}</td>
+                            <td>{{orders[i]['customer_id']}}</td>
+                            <td>{{orders[i]['date']}}</td>
+                            {% if orders[i]['paid'] == True %}
+                                <td>Да</td>
+                            {% else %}
+                                <td>Нет</td>
+                            {% endif %}
+                            {% if orders[i]['executed'] == True %}
+                                <td>Да</td>
+                            {% else %}
+                                <td>Нет</td>
+                            {% endif %}
+                        </tr>
+                    {%endfor%}
+                </table>
+            </div>
+            <div class="col-6">
+                <h3>Покупатели</h3>
+                <table class="table table-bordered table-striped table-sm w-100">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>ФИО</th>
+                            <th>Факс</th>
+                            <th>Город</th>
+                        </tr>
+                    </thead>
+                    {%for i in range(0, customers|length)%}
+                        <tr>
+                            <td>{{customers[i]['id']}}</td>
+                            <td>{{customers[i]['CustName']}}</td>
+                            <td>{{customers[i]['CustFax']}}</td>
+                            <td>{{customers[i]['CustTown']}}</td>
+                        </tr>
+                    {%endfor%}
+                </table>
+            </div>
+            <div class="col-6 mt-4">
+                <h3>Заказы, выполненные покупателями из заданного города</h3>
+                <form class="row g-3" method="post" action="/queryOrders">
+                    <div class="col-auto">
+                      <input class="form-control" id="city" name="city" placeholder="Город" value="{{ city }}">
+                    </div>
+                    <div class="col-auto">
+                      <button type="submit" class="btn btn-primary mb-3">Применить</button>
+                    </div>
+                  </form>
+                  <table class="table table-bordered table-striped table-sm w-100">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>ID покупателя</th>
+                            <th>Дата</th>
+                            <th>Оплачен</th>
+                            <th>Выполнен</th>
+                        </tr>
+                    </thead>
+                    {%for i in range(0, query_orders|length)%}
+                        <tr>
+                            <td>{{query_orders[i]['id']}}</td>
+                            <td>{{query_orders[i]['customer_id']}}</td>
+                            <td>{{query_orders[i]['date']}}</td>
+                            {% if query_orders[i]['paid'] == True %}
+                                <td>Да</td>
+                            {% else %}
+                                <td>Нет</td>
+                            {% endif %}
+                            {% if query_orders[i]['executed'] == True %}
+                                <td>Да</td>
+                            {% else %}
+                                <td>Нет</td>
+                            {% endif %}
+                        </tr>
+                    {%endfor%}
+                </table>
+            </div>
+        <div>
+    </div>
+</body>
+
+</html>
